@@ -1,6 +1,6 @@
 <?php
 /*
- * Bizuno Pro - Constacts Dashboard - sales_by_rep
+ * Dashboard for today's sales by branch
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -21,22 +21,22 @@
  * @author     Dave Premo, PhreeSoft <support@phreesoft.com>
  * @copyright  2008-2025, PhreeSoft, Inc.
  * @license    https://www.gnu.org/licenses/agpl-3.0.txt
- * @version    7.x Last Update: 2025-11-29
- * @filesource /controllers/contacts/dashboards/sales_by_rep/sales_by_rep.php
+ * @version    7.x Last Update: 2026-01-09
+ * @filesource /controllers/contacts/dashboards/sales_summary/sales_summary.php
  */
 
 namespace bizuno;
 
-class sales_by_rep
+class sales_summary
 {
-    public  $moduleID = 'contacts';
-    public  $methodDir= 'dashboards';
-    public  $code     = 'sales_by_rep';
-    public  $category = 'customers';
-    public  $struc;
-    private $dates;
-    public  $lang     = ['title'=>'Sales by Rep',
-        'description'=>'Displays total sales by Rep with options for different date ranges.'];
+    public $moduleID = 'contacts';
+    public $methodDir= 'dashboards';
+    public $code     = 'sales_summary';
+    public $secID    = 'j12_mgr';
+    public $category = 'customers';
+    public $struc;
+    public $lang     = ['title'=>'Sales Summary by Store',
+        'description'=> 'Lists sales totals by store. It is assumed that all currencies are in the default ISO. Settings are available for enhanced security and control.'];
 
     function __construct()
     {
@@ -46,9 +46,8 @@ class sales_by_rep
     }
     private function fieldStructure()
     {
-        $this->struc = [
-            // Admin fields
-            'users' => ['order'=>10,'label'=>lang('users'),    'clean'=>'array',  'attr'=>['type'=>'users',   'value'=>[0]], 'admin'=>true],
+        $this->struc = [ // Admin fields
+            'users' => ['order'=>10,'label'=>lang('users'),    'clean'=>'array',  'attr'=>['type'=>'users',   'value'=>[0],],'admin'=>true],
             'roles' => ['order'=>20,'label'=>lang('groups'),   'clean'=>'array',  'attr'=>['type'=>'roles',   'value'=>[-1]],'admin'=>true],
             'reps'  => ['order'=>30,'label'=>lang('just_reps'),'clean'=>'boolean','attr'=>['type'=>'selNoYes','value'=>0],   'admin'=>true],
             // User fields
@@ -68,11 +67,11 @@ class sales_by_rep
         $running= 0;
         msgDebug("\nEntering getTotals with range = $range");
         $dates  = dbSqlDates($range); // this quarter
-        $rows   = dbGetMulti(BIZUNO_DB_PREFIX.'journal_main', "journal_id IN (12,13) AND post_date>='{$dates['start_date']}' AND post_date<'{$dates['end_date']}'", '', ['journal_id','total_amount','rep_id']);
+        $rows   = dbGetMulti(BIZUNO_DB_PREFIX.'journal_main', "journal_id IN (12,13) AND post_date>='{$dates['start_date']}' AND post_date<'{$dates['end_date']}'", '', ['journal_id','total_amount','store_id']);
         foreach ($rows as $row) {
             $total = $row['journal_id']==13 ? -$row['total_amount'] : $row['total_amount'];
-            if (empty($output['r'.$row['rep_id']])) { $output['r'.$row['rep_id']] = 0; }
-            $output['r'.$row['rep_id']] += $total;
+            if (empty($output['r'.$row['store_id']])) { $output['r'.$row['store_id']] = 0; }
+            $output['r'.$row['store_id']] += $total;
             $running += $total;
         }
         foreach ($output as $rep => $value) {
