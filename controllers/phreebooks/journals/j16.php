@@ -77,7 +77,7 @@ class j16 extends jCommon
     public function customizeView(&$data)
     {
         $fldKeys = ['id','journal_id','recur_id','recur_frequency','item_array','store_id','invoice_num','rep_id','post_date'];
-        $data['fields']['invoice_num']['required'] = true;
+        $data['fields']['invoice_num']['required'] = false;
         $data['jsHead']['datagridData'] = $this->dgDataItem;
         $data['datagrid']['item'] = $this->dgAdjust('dgJournalItem');
         unset($data['toolbars']['tbPhreeBooks']['icons']['print'],  $data['toolbars']['tbPhreeBooks']['icons']['recur']);
